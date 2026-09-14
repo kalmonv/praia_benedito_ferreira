@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praia Benedito Ferreira | Camping e Natureza</title>
+    <meta name="description" content="Conheça a Praia Benedito Ferreira. Praia particular, camping, natureza e momentos especiais. Consulte valores e disponibilidade.">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Praia Benedito Ferreira | Camping e Natureza">
+    <meta property="og:description" content="Sua próxima aventura começa aqui. Praia particular, camping, natureza e momentos especiais.">
+    <meta property="og:type" content="website">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sand-100': '#F7F5F0',
+                        'sand-200': '#EBE5D9',
+                        'kraft': '#D9CDB8',
+                        'nature-green': '#4A5D4E',
+                        'river-blue': '#5C7C8A',
+                        'turquoise': '#7FA9A0',
+                        'warm-yellow': '#E5B96E',
+                        'ink-brown': '#2C2825',
+                        'copper': '#B85D38'
+                    },
+                    fontFamily: {
+                        'serif': ['"DM Serif Display"', 'serif'],
+                        'sans': ['"DM Sans"', 'sans-serif'],
+                        'hand': ['"Caveat"', 'cursive']
+                    },
+                    boxShadow: {
+                        'journal': '2px 4px 12px rgba(44, 40, 37, 0.08)',
+                        'photo': '4px 6px 16px rgba(0, 0, 0, 0.15)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        /* Base Textures and Layouts */
+        body {
+            background-color: #F7F5F0;
+            color: #2C2825;
+            overflow-x: hidden;
+        }
+
+        /* Subtle Paper Texture overlay */
+        .texture-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.4;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+
+        /* Journal Elements */
+        .journal-label {
+            border: 1px solid #2C2825;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            background: #F7F5F0;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .kraft-paper {
+            background-color: #D9CDB8;
+            background-image: radial-gradient(#2C2825 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            box-shadow: inset 0 0 40px rgba(44, 40, 37, 0.05);
+        }
+
+        .map-dots {
+            border-top: 2px dashed #2C2825;
+            opacity: 0.3;
+        }
+
+        /* Typography Extras */
+        .editorial-heading {
+            line-height: 1.1;
+        }
+
+        /* Scroll Animations */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hide Scrollbar for Lightbox */
+        .no-scroll {
+            overflow: hidden;
+        }
+
+        /* Custom Checkbox Styling */
+        input[type="checkbox"] {
+            accent-color: #4A5D4E;
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+
+        /* Photo Frame */
+        .photo-frame {
+            background: white;
+            padding: 12px 12px 36px 12px;
+            box-shadow: 2px 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Stylized SVG Map Line */
+        .svg-route {
+            stroke-dasharray: 8, 8;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased relative">
+    <div class="texture-overlay"></div>
+
+    <div id="app">
+        <!-- Navigation -->
+        <nav :class="{'bg-sand-100 shadow-sm': scrolled, 'bg-transparent': !scrolled}" class="fixed w-full z-40 transition-all duration-300 py-4">
+            <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+                <a href="#" class="flex items-center gap-2 text-ink-brown hover:opacity-80 transition">
+                    <i data-lucide="tent" class="w-6 h-6"></i>
+                    <div class="flex flex-col">
+                        <span class="font-serif font-bold text-lg leading-none">PRAIA</span>
+                        <span class="text-[0.65rem] tracking-widest font-bold leading-none uppercase">Benedito Ferreira</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex items-center gap-8 text-sm font-semibold tracking-wide uppercase">
+                    <a href="#about" class="hover:text-copper transition">A Praia</a>
+                    <a href="#experience" class="hover:text-copper transition">Experiência</a>
+                    <a href="#rates" class="hover:text-copper transition">Valores</a>
+                    <a href="#gallery" class="hover:text-copper transition">Galeria</a>
+                    <a href="#location" class="hover:text-copper transition">Localização</a>
+                    <a :href="whatsappLink" target="_blank" class="journal-label hover:bg-ink-brown hover:text-sand-100 transition cursor-pointer">
+                        Contato
+                    </a>
+                </div>
+
+                <!-- Mobile Hamburger -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-ink-brown z-50 relative">
+                    <i v-if="!mobileMenuOpen" data-lucide="menu" class="w-7 h-7"></i>
+                    <i v-else data-lucide="x" class="w-7 h-7"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div v-show="mobileMenuOpen" class="fixed inset-0 bg-sand-100 z-40 flex flex-col items-center justify-center gap-8 lg:hidden text-xl font-serif text-ink-brown">
+                <a href="#about" @click="mobileMenuOpen = false">A Praia</a>
+                <a href="#experience" @click="mobileMenuOpen = false">Experiência</a>
+                <a href="#rates" @click="mobileMenuOpen = false">Valores</a>
+                <a href="#gallery" @click="mobileMenuOpen = false">Galeria</a>
+                <a href="#location" @click="mobileMenuOpen = false">Localização</a>
+                <a :href="whatsappLink" target="_blank" class="journal-label mt-4">Fale Conosco</a>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="relative min-h-screen flex items-center justify-center overflow-hidden">
+            <!-- Background Video -->
+            <div class="absolute inset-0 z-0">
+                <video autoplay loop muted playsinline class="w-full h-full object-cover object-center">
+                    <source src="https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/3161.mp4" type="video/webm">
+                </video>
+                <div class="absolute inset-0 bg-black/40"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-sand-100 via-transparent to-transparent"></div>
+            </div>
+
+            <!-- Floating Journal Elements (Hidden on small mobile) -->
+            <div class="hidden md:block absolute top-1/4 left-10 z-10 bg-sand-100/90 backdrop-blur-sm p-4 font-mono text-xs border border-ink-brown shadow-journal transform -rotate-2">
+                ┌────────────────────┐<br>
+                │  NOTA DE CAMPO 01  │<br>
+                │  PRAIA BENEDITO    │<br>
+                │  FERREIRA          │<br>
+                └────────────────────┘
+            </div>
+
+            <div class="absolute bottom-1/4 right-5 md:right-20 z-10 bg-warm-yellow px-3 py-1 font-bold text-xs uppercase tracking-wider border-2 border-ink-brown transform rotate-3">
+                ☀️ Aventura de Fim de Semana
+            </div>
+
+            <!-- Main Content -->
+            <div class="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center mt-16">
+                <div class="journal-label bg-sand-100/90 mb-6 flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-3 h-3"></i> Praia Particular • Camping • Natureza
+                </div>
+                
+                <h2 class="text-sand-100 font-bold tracking-[0.2em] uppercase text-sm md:text-base mb-4 drop-shadow-md">
+                    Praia Benedito Ferreira
+                </h2>
+                
+                <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl text-sand-100 mb-6 editorial-heading drop-shadow-lg">
+                    Monte sua barraca.<br>Deixe a rotina para trás.
+                </h1>
+                
+                <p class="text-sand-100 text-lg md:text-xl font-medium mb-10 max-w-2xl drop-shadow-md">
+                    Natureza, camping e momentos inesquecíveis à beira d'água.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#experience" class="bg-sand-100 text-ink-brown px-8 py-4 font-bold tracking-wide flex items-center justify-center gap-2 border-2 border-sand-100 hover:bg-transparent hover:text-sand-100 transition">
+                        <i data-lucide="tent" class="w-5 h-5"></i> EXPLORAR O CAMPING
+                    </a>
+                    <a :href="whatsappLink" target="_blank" class="bg-ink-brown text-sand-100 px-8 py-4 font-bold tracking-wide flex items-center justify-center gap-2 border-2 border-ink-brown hover:bg-transparent hover:text-sand-100 hover:border-sand-100 transition">
+                        <i data-lucide="smartphone" class="w-5 h-5"></i> FALE CONOSCO
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Introduction / Field Notes -->
+        <section id="about" class="py-24 px-6 relative">
+            <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 items-center fade-up">
+                <div class="lg:w-1/2">
+                    <span class="text-copper font-bold tracking-widest text-sm uppercase mb-4 block">Notas de Campo</span>
+                    <h2 class="font-serif text-4xl md:text-5xl editorial-heading mb-6 text-ink-brown">
+                        Alguns lugares foram feitos para se viver sem pressa.
+                    </h2>
+                    <div class="font-serif text-xl leading-relaxed text-ink-brown/80 space-y-6">
+                        <p>Bem-vindo à Praia Benedito Ferreira. Um refúgio escondido onde o som da água substitui o barulho da cidade, e o céu estrelado é o seu teto.</p>
+                        <p>Aqui, acreditamos no luxo simples da natureza. Seja você alguém montando a barraca pela primeira vez ou um viajante experiente, você encontrará um espaço acolhedor na beira do rio.</p>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 relative">
+                    <!-- Photo with tape effect -->
+                    <div class="bg-white p-3 shadow-journal transform rotate-2 relative z-10">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-sand-200/80 backdrop-blur-sm -rotate-3 z-20"></div>
+                        <img src="https://www.dropbox.com/scl/fi/dxtvc7smqtqdf2ouuhlv0/IMG_3112.webp?rlkey=r6gd4q8rl2kxv8w1rlsnma9fc&raw=1" alt="Camping à beira do rio" class="w-full h-auto">
+                        <p class="font-hand text-xl text-center mt-3 text-ink-brown/70">Nossa vista para a água</p>
+                    </div>
+                    <!-- Decorative element -->
+                    <div class="absolute -bottom-8 -left-8 w-32 h-32 border border-dashed border-ink-brown rounded-full opacity-20 -z-10"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Adventure Map Concept -->
+        <section class="py-16 overflow-hidden bg-sand-200 border-y border-ink-brown">
+            <div class="max-w-7xl mx-auto px-6 text-center mb-10 fade-up">
+                <h2 class="font-sans font-bold tracking-[0.2em] text-xs uppercase mb-2">A Aventura Começa Aqui</h2>
+            </div>
+            
+            <div class="relative h-48 max-w-5xl mx-auto flex items-center justify-between px-10 fade-up">
+                <!-- SVG Stylized Route -->
+                <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                    <path d="M 50,100 Q 200,20 400,120 T 800,80" fill="none" stroke="#2C2825" stroke-width="2" class="svg-route opacity-40"></path>
+                </svg>
+
+                <div class="relative z-10 flex flex-col items-center bg-sand-100 p-2 rounded-full border border-ink-brown">
+                    <i data-lucide="car" class="w-6 h-6 text-ink-brown"></i>
+                </div>
+                <div class="relative z-10 flex flex-col items-center bg-sand-100 p-2 rounded-full border border-ink-brown mt-16">
+                    <i data-lucide="map" class="w-6 h-6 text-ink-brown"></i>
+                </div>
+                <div class="relative z-10 flex flex-col items-center bg-sand-100 p-2 rounded-full border border-ink-brown -mt-10">
+                    <i data-lucide="flame" class="w-6 h-6 text-copper"></i>
+                </div>
+                <div class="relative z-10 flex flex-col items-center bg-sand-100 p-2 rounded-full border border-ink-brown mt-5">
+                    <i data-lucide="tent" class="w-6 h-6 text-nature-green"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Camping Experience -->
+        <section id="experience" class="py-24 px-6 relative">
+            <div class="max-w-6xl mx-auto fade-up">
+                <div class="text-center mb-16">
+                    <h2 class="font-serif text-4xl md:text-6xl editorial-heading mb-4 text-ink-brown">Sua barraca.<br>Sua galera.<br>Seu tempo.</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Features from Vue -->
+                    <div v-for="(feature, index) in config.features" :key="index" class="p-6 border border-ink-brown bg-sand-100 relative group hover:bg-kraft transition duration-300">
+                        <div class="w-12 h-12 mb-4 flex items-center justify-center border border-ink-brown rounded-full bg-sand-200 group-hover:bg-sand-100 transition">
+                            <i :data-lucide="feature.icon" class="w-5 h-5 text-ink-brown"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 uppercase tracking-wide">{{ feature.title }}</h3>
+                        <p class="text-sm opacity-80 leading-relaxed">{{ feature.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pack Your Bag & The Beach Split -->
+        <section class="border-y border-ink-brown flex flex-col lg:flex-row">
+            <!-- Checklist -->
+            <div class="lg:w-1/3 kraft-paper p-10 lg:p-16 border-b lg:border-b-0 lg:border-r border-ink-brown fade-up">
+                <div class="journal-label mb-8">Preparação</div>
+                <h2 class="font-serif text-4xl editorial-heading mb-8">Faça sua mala</h2>
+                
+                <div class="space-y-4 font-mono text-sm">
+                    <label v-for="(item, index) in config.checklist" :key="index" class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" class="border-ink-brown">
+                        <span class="group-hover:opacity-70 transition">{{ item }}</span>
+                    </label>
+                </div>
+                
+                <p class="mt-8 text-xs italic opacity-70 font-serif">* Itens sugeridos — ajuste de acordo com seus planos e as regras do local.</p>
+            </div>
+
+            <!-- The Beach -->
+            <div class="lg:w-2/3 bg-river-blue p-10 lg:p-16 relative overflow-hidden text-sand-100 flex flex-col justify-center fade-up">
+                <!-- Large Background watermark -->
+                <i data-lucide="waves" class="absolute -right-20 -bottom-20 w-96 h-96 opacity-10"></i>
+                
+                <div class="journal-label !border-sand-100 !text-sand-100 !bg-transparent mb-6 self-start">A Praia</div>
+                <h2 class="font-serif text-4xl md:text-6xl editorial-heading mb-6 relative z-10 max-w-lg">
+                    Onde a água encontra a aventura.
+                </h2>
+                <p class="text-sand-100/80 max-w-md relative z-10 text-lg">
+                    Em breve mais informações sobre a praia e os acessos. Um espaço para relaxar, nadar e ver o dia passar sem pressa.
+                </p>
+                
+                <!-- Floating Photos -->
+                <div class="hidden md:block absolute right-10 top-1/2 -translate-y-1/2 rotate-3 shadow-photo border-4 border-white z-20 w-56">
+                    <img src="https://www.dropbox.com/scl/fi/2ob391b7bg26hjdbicsa9/IMG_3008.webp?rlkey=v3urj5h8jlh8zibtddmyqnijc&raw=1" alt="Água" class="w-full h-auto">
+                    <div class="bg-white text-center py-2 font-hand text-ink-brown text-xl">Luz da manhã</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Photo Gallery -->
+        <section id="gallery" class="py-24 px-6 bg-sand-100">
+            <div class="max-w-7xl mx-auto fade-up">
+                <div class="flex flex-col items-center mb-16 text-center">
+                    <h2 class="font-serif text-4xl md:text-5xl editorial-heading mb-4">Cartões Postais</h2>
+                    <p class="opacity-70 font-serif text-lg">Alguns momentos da Praia Benedito Ferreira.</p>
+                </div>
+
+                <!-- Asymmetric Grid configurado perfeitamente para 4 fotos -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 auto-rows-[200px] md:auto-rows-[300px]">
+                    <div v-for="(photo, index) in config.gallery" :key="index" 
+                         @click="openLightbox(index)"
+                         :class="[
+                            'relative group cursor-pointer overflow-hidden shadow-sm hover:shadow-photo transition duration-500',
+                            index === 0 ? 'col-span-2 row-span-2' : '',
+                            index === 3 ? 'col-span-2' : ''
+                         ]">
+                        <img :src="photo.image" :alt="photo.alt" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                        <div class="absolute inset-0 bg-ink-brown/0 group-hover:bg-ink-brown/20 transition duration-300 flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="text-white opacity-0 group-hover:opacity-100 transition duration-300 w-8 h-8"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Cards -->
+        <section id="rates" class="py-24 px-6 bg-sand-200 border-t border-ink-brown">
+            <div class="max-w-6xl mx-auto fade-up">
+                <div class="text-center mb-16">
+                    <div class="journal-label mb-4">Valores do Camping</div>
+                    <h2 class="font-serif text-4xl md:text-5xl editorial-heading text-ink-brown">Escolha como quer ficar.</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div v-for="(rate, index) in config.prices" :key="index" class="bg-sand-100 border-2 border-ink-brown p-8 flex flex-col relative">
+                        <!-- Ticket notches -->
+                        <div class="absolute -left-3 top-1/2 w-6 h-6 bg-sand-200 border-r-2 border-ink-brown rounded-full -translate-y-1/2"></div>
+                        <div class="absolute -right-3 top-1/2 w-6 h-6 bg-sand-200 border-l-2 border-ink-brown rounded-full -translate-y-1/2"></div>
+                        
+                        <h3 class="font-bold uppercase tracking-widest text-sm mb-4 pb-4 border-b border-dashed border-ink-brown text-center">{{ rate.name }}</h3>
+                        <div class="text-center mb-4 flex-grow">
+                            <div class="font-serif text-3xl font-bold text-ink-brown mb-1">{{ rate.price }}</div>
+                            <div class="text-xs uppercase tracking-wide opacity-60">{{ rate.description }}</div>
+                        </div>
+                        <a :href="whatsappLink" target="_blank" class="block w-full py-3 bg-ink-brown text-sand-100 text-center font-bold text-xs uppercase tracking-widest hover:bg-copper transition mt-auto">
+                            Ver Disponibilidade
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works (Timeline) -->
+        <section class="py-24 px-6">
+            <div class="max-w-5xl mx-auto fade-up">
+                <div class="flex flex-col lg:flex-row justify-between items-center relative">
+                    <!-- Dotted line background desktop -->
+                    <div class="hidden lg:block absolute top-1/2 left-0 w-full border-t-2 border-dashed border-ink-brown/30 -z-10"></div>
+                    
+                    <div class="flex flex-col items-center text-center bg-sand-100 py-4 px-6 mb-8 lg:mb-0">
+                        <span class="font-serif text-4xl text-copper mb-2">01</span>
+                        <span class="font-bold text-xs uppercase tracking-widest">Escolha a Data</span>
+                    </div>
+                    <div class="hidden lg:block text-ink-brown/30"><i data-lucide="arrow-right"></i></div>
+                    
+                    <div class="flex flex-col items-center text-center bg-sand-100 py-4 px-6 mb-8 lg:mb-0">
+                        <span class="font-serif text-4xl text-copper mb-2">02</span>
+                        <span class="font-bold text-xs uppercase tracking-widest">Fale Conosco</span>
+                    </div>
+                    <div class="hidden lg:block text-ink-brown/30"><i data-lucide="arrow-right"></i></div>
+                    
+                    <div class="flex flex-col items-center text-center bg-sand-100 py-4 px-6 mb-8 lg:mb-0">
+                        <span class="font-serif text-4xl text-copper mb-2">03</span>
+                        <span class="font-bold text-xs uppercase tracking-widest">Confirme a Vaga</span>
+                    </div>
+                    <div class="hidden lg:block text-ink-brown/30"><i data-lucide="arrow-right"></i></div>
+
+                    <div class="flex flex-col items-center text-center bg-sand-100 py-4 px-6">
+                        <span class="font-serif text-4xl text-copper mb-2">04</span>
+                        <span class="font-bold text-xs uppercase tracking-widest">Faça a Mala e Venha</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rules & Location -->
+        <section id="location" class="py-24 px-6 bg-nature-green text-sand-100 border-y border-ink-brown relative overflow-hidden">
+            <!-- Topographic SVG background pattern -->
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c13.866 0 25.36 11.297 25.36 25.235 0 13.94-11.494 25.236-25.36 25.236-13.867 0-25.36-11.297-25.36-25.236C-14.36 29.297-2.867 18 11 18zm0 43.195c9.208 0 16.666-7.433 16.666-16.602 0-9.168-7.458-16.602-16.666-16.602-9.208 0-16.666 7.434-16.666 16.602 0 9.169 7.458 16.602 16.666 16.602zm-1.848-15.68h3.696v-1.84h-3.696v1.84zm-3.696 0h1.848v-1.84H5.456v1.84zm11.088 0h1.848v-1.84h-1.848v1.84zm3.696 0h1.848v-1.84h-1.848v1.84zm-22.176 0h1.848v-1.84H-1.92v1.84zm33.264 0h1.848v-1.84h-1.848v1.84zm-14.784 7.36h3.696v-1.84h-3.696v1.84zm3.696 3.68h-3.696v-1.84h3.696v1.84zm0 3.68h-3.696v-1.84h3.696v1.84zm-3.696-22.08h3.696v-1.84h-3.696v1.84zm3.696-3.68h-3.696v-1.84h3.696v1.84zm0-3.68h-3.696v-1.84h3.696v1.84z\' fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'/%3E%3C/svg%3E');"></div>
+            
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative z-10 fade-up">
+                <!-- Rules Board -->
+                <div class="md:w-1/2 bg-sand-100 text-ink-brown p-8 lg:p-12 transform -rotate-1 shadow-photo">
+                    <h2 class="font-serif text-3xl editorial-heading mb-6 border-b border-ink-brown pb-4">Antes de chegar</h2>
+                    <ul class="space-y-4 font-mono text-sm">
+                        <li v-for="(rule, index) in config.rules" :key="index" class="flex items-start gap-3">
+                            <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span>{{ rule }}</span>
+                        </li>
+                    </ul>
+                    <p class="mt-8 text-xs italic opacity-70 border-t border-dashed border-ink-brown pt-4">
+                        As regras e condições podem ser atualizadas de acordo com o funcionamento do local.
+                    </p>
+                </div>
+
+                <!-- Location -->
+                <div class="md:w-1/2 flex flex-col justify-center">
+                    <div class="journal-label !border-sand-100 !text-sand-100 !bg-transparent self-start mb-6">Encontre o Caminho</div>
+                    <h2 class="font-serif text-4xl md:text-5xl editorial-heading mb-6">Localização</h2>
+                    <p class="text-lg opacity-90 mb-8 flex items-start gap-3">
+                        <i data-lucide="map-pin" class="w-6 h-6 mt-1 shrink-0"></i>
+                        <span>Os detalhes da localização estarão disponíveis em breve.<br>Confirme a disponibilidade e a rota com nossa equipe antes de vir.</span>
+                    </p>
+                    <a :href="config.siteConfig.googleMapsUrl" target="_blank" class="inline-flex items-center justify-center gap-2 border-2 border-sand-100 py-3 px-6 font-bold text-xs uppercase tracking-widest hover:bg-sand-100 hover:text-nature-green transition w-max">
+                        Abrir no Google Maps
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="relative h-[60vh] flex items-center justify-center">
+            <!-- Background Video CTA -->
+            <div class="absolute inset-0 z-0">
+                <video autoplay loop muted playsinline class="w-full h-full object-cover object-center">
+                    <source src="https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/3163.mp4" type="video/webm">
+                </video>
+                <div class="absolute inset-0 bg-ink-brown/40"></div>
+            </div>
+            
+            <div class="relative z-10 text-center text-sand-100 px-6 fade-up">
+                <h2 class="font-serif text-5xl md:text-7xl editorial-heading mb-4 drop-shadow-lg">Sua próxima aventura<br>começa aqui.</h2>
+                <p class="font-mono text-sm tracking-widest uppercase mb-10 drop-shadow">Praia Benedito Ferreira • Praia Particular • Natureza</p>
+                
+                <a :href="whatsappLink" target="_blank" class="bg-copper text-white px-10 py-4 font-bold tracking-wide flex items-center justify-center gap-2 hover:bg-white hover:text-copper transition w-max mx-auto">
+                    <i data-lucide="tent" class="w-5 h-5"></i> PLANEJE SUA VISITA
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-ink-brown text-sand-200 py-12 px-6 text-center border-t border-white/10">
+            <div class="max-w-4xl mx-auto flex flex-col items-center">
+                <div class="flex items-center gap-2 text-sand-100 mb-6">
+                    <i data-lucide="tent" class="w-8 h-8"></i>
+                    <div class="flex flex-col text-left">
+                        <span class="font-serif font-bold text-xl leading-none">PRAIA</span>
+                        <span class="text-[0.7rem] tracking-widest font-bold leading-none uppercase">Benedito Ferreira</span>
+                    </div>
+                </div>
+                <p class="text-sm opacity-60 mb-8 font-serif italic">Praia particular • Camping • Natureza</p>
+                
+                <div class="flex gap-6 mb-12">
+                    <a :href="config.siteConfig.instagramUrl" target="_blank" class="hover:text-white transition"><i data-lucide="instagram"></i></a>
+                    <a :href="whatsappLink" target="_blank" class="hover:text-white transition"><i data-lucide="message-circle"></i></a>
+                    <a :href="config.siteConfig.googleMapsUrl" target="_blank" class="hover:text-white transition"><i data-lucide="map-pin"></i></a>
+                </div>
+                
+                <div class="text-xs font-mono opacity-40 uppercase tracking-widest">
+                    &copy; 2026 Praia Benedito Ferreira
+                </div>
+            </div>
+        </footer>
+
+        <!-- Floating WhatsApp -->
+        <a :href="whatsappLink" target="_blank" class="fixed bottom-6 right-6 z-50 bg-nature-green text-white p-4 rounded-full shadow-photo hover:scale-110 transition duration-300 flex items-center justify-center group hidden md:flex">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+            <span class="absolute right-14 bg-ink-brown text-sand-100 text-xs px-3 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none font-bold uppercase tracking-wide">
+                Ver Disponibilidade
+            </span>
+        </a>
+
+        <!-- Mobile Sticky CTA -->
+        <div class="md:hidden fixed bottom-0 left-0 w-full z-40 bg-sand-100 border-t border-ink-brown p-3 flex justify-center">
+            <a :href="whatsappLink" target="_blank" class="bg-nature-green text-white w-full py-3 text-center font-bold text-sm uppercase tracking-widest flex justify-center items-center gap-2">
+                <i data-lucide="message-circle" class="w-4 h-4"></i> Ver Disponibilidade
+            </a>
+        </div>
+
+        <!-- Lightbox -->
+        <Transition name="fade">
+            <div v-if="isLightboxOpen" class="fixed inset-0 z-50 bg-ink-brown/95 flex items-center justify-center p-4 backdrop-blur-sm" @click.self="closeLightbox">
+                <button @click="closeLightbox" class="absolute top-6 right-6 text-sand-100 hover:text-white transition">
+                    <i data-lucide="x" class="w-10 h-10"></i>
+                </button>
+                
+                <button @click="prevImage" class="absolute left-6 top-1/2 -translate-y-1/2 text-sand-100 hover:text-white transition">
+                    <i data-lucide="chevron-left" class="w-12 h-12"></i>
+                </button>
+                
+                <img :src="config.gallery[currentImageIndex].image" :alt="config.gallery[currentImageIndex].alt" class="max-w-full max-h-[85vh] object-contain shadow-photo">
+                
+                <button @click="nextImage" class="absolute right-6 top-1/2 -translate-y-1/2 text-sand-100 hover:text-white transition">
+                    <i data-lucide="chevron-right" class="w-12 h-12"></i>
+                </button>
+                
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-sand-100 font-mono text-sm tracking-widest">
+                    {{ currentImageIndex + 1 }} / {{ config.gallery.length }}
+                </div>
+            </div>
+        </Transition>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // ==========================================
+        // EDIT THESE VALUES BEFORE PUBLISHING
+        // ==========================================
+        const siteConfig = {
+            name: "Praia Benedito Ferreira",
+            whatsappNumber: "5599999999999", // Format: CountryCode + AreaCode + Number
+            googleMapsUrl: "#", // Replace with real maps link
+            instagramUrl: "#"   // Replace with real instagram link
+        };
+
+        const campingFeatures = [
+            { icon: "tent", title: "Área de Camping", description: "Espaço para montar sua barraca e curtir a natureza." },
+            { icon: "waves", title: "Acesso à Praia", description: "Acesso direto à água para relaxar e nadar." },
+            { icon: "tree-pine", title: "Natureza", description: "Cercado pela flora local e os sons calmos do rio." },
+            { icon: "sun", title: "Experiência ao Ar Livre", description: "Desconecte-se da cidade e aproveite o céu aberto." }
+        ];
+
+        const packingList = [
+            "Barraca e espeques",
+            "Saco de dormir / colchonete",
+            "Comida e bebida",
+            "Protetor solar e repelente",
+            "Lanterna",
+            "Sacos de lixo",
+            "Câmera fotográfica",
+            "Boa companhia"
+        ];
+
+        // GALERIA COM SUAS FOTOS REAIS
+        const gallery = [
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_3169.webp", alt: "Vista da Praia Benedito Ferreira" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_3134.webp", alt: "Natureza e Rio" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_3112.webp", alt: "Espaço de convivência" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_3008.webp", alt: "Detalhes à beira da água" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_0538.webp", alt: "Paisagem da Praia Benedito Ferreira" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_0421.webp", alt: "Natureza da região" },
+            { image: "https://raw.githubusercontent.com/kalmonv/praia_benedito_ferreira/main/IMG_0373.webp", alt: "Vista da natureza" }
+        ];
+
+
+        const prices = [
+            { name: "Camping", price: "R$ XX", description: "por pessoa / noite" },
+            { name: "Day Use", price: "R$ XX", description: "por pessoa" },
+            { name: "Crianças", price: "R$ XX", description: "consulte condições" },
+            { name: "Grupos", price: "CONSULTE", description: "condições especiais" }
+        ];
+
+        const rules = [
+            "Respeite a natureza e a vida silvestre local.",
+            "Leve seu lixo com você. Mantenha a praia limpa.",
+            "Respeite os outros visitantes e mantenha um ambiente pacífico.",
+            "Crianças devem permanecer acompanhadas por seus responsáveis o tempo todo.",
+            "Confirme as condições do camping e disponibilidade antes de vir."
+        ];
+
+        // ==========================================
+        // VUE APPLICATION
+        // ==========================================
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const config = {
+                    siteConfig,
+                    features: campingFeatures,
+                    checklist: packingList,
+                    gallery,
+                    prices,
+                    rules
+                };
+
+                const scrolled = ref(false);
+                const mobileMenuOpen = ref(false);
+                const isLightboxOpen = ref(false);
+                const currentImageIndex = ref(0);
+
+                const whatsappMessage = encodeURIComponent("Olá! Gostaria de saber mais sobre a Praia Benedito Ferreira e consultar a disponibilidade do camping.");
+                const whatsappLink = computed(() => `https://wa.me/${siteConfig.whatsappNumber}?text=${whatsappMessage}`);
+
+                const handleScroll = () => {
+                    scrolled.value = window.scrollY > 50;
+                };
+
+                const openLightbox = (index) => {
+                    currentImageIndex.value = index;
+                    isLightboxOpen.value = true;
+                    document.body.classList.add('no-scroll');
+                };
+
+                const closeLightbox = () => {
+                    isLightboxOpen.value = false;
+                    document.body.classList.remove('no-scroll');
+                };
+
+                const nextImage = () => {
+                    currentImageIndex.value = (currentImageIndex.value + 1) % gallery.length;
+                };
+
+                const prevImage = () => {
+                    currentImageIndex.value = (currentImageIndex.value - 1 + gallery.length) % gallery.length;
+                };
+
+                const handleKeydown = (e) => {
+                    if (!isLightboxOpen.value) return;
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowRight') nextImage();
+                    if (e.key === 'ArrowLeft') prevImage();
+                };
+
+                // Simple Intersection Observer for scroll animations
+                const setupAnimations = () => {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('visible');
+                            }
+                        });
+                    }, { threshold: 0.1 });
+
+                    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+                };
+
+                onMounted(() => {
+                    window.addEventListener('scroll', handleScroll);
+                    window.addEventListener('keydown', handleKeydown);
+                    
+                    // Initialize Lucide icons
+                    lucide.createIcons();
+                    
+                    // Setup scroll observer
+                    setTimeout(setupAnimations, 100);
+                });
+
+                return {
+                    config,
+                    scrolled,
+                    mobileMenuOpen,
+                    whatsappLink,
+                    isLightboxOpen,
+                    currentImageIndex,
+                    openLightbox,
+                    closeLightbox,
+                    nextImage,
+                    prevImage
+                };
+            }
+        }).mount('#app');
+    </script>
+    
+    <style>
+        /* Lightbox Fade Transition */
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+</body>
+</html>
