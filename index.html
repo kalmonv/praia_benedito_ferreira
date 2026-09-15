@@ -154,7 +154,8 @@
         <nav :class="{'bg-sand-100 shadow-sm': scrolled, 'bg-transparent': !scrolled}" class="fixed w-full z-40 transition-all duration-300 py-4">
             <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
                 <a href="#" class="flex items-center gap-2 text-ink-brown hover:opacity-80 transition">
-                    <i data-lucide="tent" class="w-6 h-6"></i>
+                    <i data-lucide="tent" class="w-6 h-6 hidden"></i>
+                    <img class="w-6 h-6" src="images/logo.webp" />
                     <div class="flex flex-col">
                         <span class="font-serif font-bold text-lg leading-none">PRAIA</span>
                         <span class="text-[0.65rem] tracking-widest font-bold leading-none uppercase">Benedito Ferreira</span>
@@ -278,8 +279,8 @@
             
             <div class="relative h-48 max-w-5xl mx-auto flex items-center justify-between px-10 fade-up">
                 <!-- SVG Stylized Route -->
-                <img class="absolute inset-0 w-full h-full" src="images/logo.webp" />
-                <svg class="absolute inset-0 w-full h-full hidden" preserveAspectRatio="none">
+                
+                <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                     <path d="M 50,100 Q 200,20 400,120 T 800,80" fill="none" stroke="#2C2825" stroke-width="2" class="svg-route opacity-40"></path>
                 </svg>
 
